@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <!--Displays a list of all books.-->
+  <ul>
+    {% for i in object_list %}
+      <li><a href="{% url 'detail' i.id %}">"{{ i.title }}"<br />{{ i.author }}</a></li>
+      <br />
+    {% endfor %}
+  </ul>
+  <!--Show a panel with pagination page numbers.-->
+  {% if page_obj.has_other_pages %}
+    <nav>
+      <ul>
+        {% if page_obj.has_previous %}
+          <l><a href="?page={{ page_obj.previous_page_number }}">&lt;</a></l>
+        {% endif %}
+        {% for i in paginator.page_range %}
+          {% if page_obj.number == i %}
+            <l>{{ i }}</l>
+          {% elif i >= page_obj.number|add:-1 and i <= page_obj.number|add:1 %}
+            <l><a href="?page={{ i }}">{{ i }}</a></l>
+          {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+          <l><a href="?page={{ page_obj.next_page_number }}">&gt;</a></l>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+{% endblock %}

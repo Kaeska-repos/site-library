@@ -1,3 +1,6 @@
 # site-library
 This repository was created to store a website that will demonstrate my work using the Django framework.
-So far, the created site is "empty". There is a superuser: login "super", password "12345".
+
+At the moment, the main page of the site displays only a list of registered books (the list items are links).
+Clicking on the link opens a page with a more detailed description of the book.
+Books are registered using the admin panel. Superuser login: "super", password: "12345".

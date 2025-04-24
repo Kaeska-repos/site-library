@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!--Show full information about the book.-->
+<table><tr>
+  <td>
+    Заголовок: "{{ object.title }}"<br />
+    Автор: {{ object.author }}<br />
+    Год издания: {{ object.year }}<br />
+    Издатель: {{ object.publisher }}<br />
+    Номер издания: {{ object.edition }}
+  </td>
+  <td>
+    {% if object.cover %}
+      <img src="{{object.cover.url}}" />
+    {% endif %}
+  </td>
+</tr></table>
+{% endblock %}
