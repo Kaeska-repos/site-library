@@ -1,31 +1,56 @@
+<!--A page for searching for books that are available.-->
+
 {% extends 'base.html' %}
 
 {% block content %}
-  <!--Displays a list of all books.-->
-  <ul>
-    {% for i in object_list %}
-      <li><a href="{% url 'detail' i.id %}">"{{ i.title }}"<br />{{ i.author }}</a></li>
-      <br />
-    {% endfor %}
-  </ul>
-  <!--Show a panel with pagination page numbers.-->
-  {% if page_obj.has_other_pages %}
-    <nav>
-      <ul>
-        {% if page_obj.has_previous %}
-          <l><a href="?page={{ page_obj.previous_page_number }}">&lt;</a></l>
+  <table><!--A table for marking up the entire page.--><tr>
+    <td style="vertical-align: top; padding-right: 1rem; text-align: right;"><!--Book search form.-->
+      <form action="">
+        {{ form.as_p }}
+        <button type="submit">Найти</button>
+      </form>
+    </td>
+    <td><!--Displays a list of books.-->
+      <h2>Книги в наличии</h2>
+      {% if find_title %}<!--Displays a list of books found by the specified title/title and author.-->
+        <ul>
+          {% for i in object_list %}
+            {% if find_title.lower in i.title.lower %}
+              {% if find_author.lower in i.author.lower %}
+                <li><a href="{% url 'detail' i.id %}">"{{ i.title }}"<br />{{ i.author }}</a></li>
+                <br />
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% else %}<!--Displays a list of all books.-->
+        <ul>
+          {% for i in object_list %}
+            <li><a href="{% url 'detail' i.id %}">"{{ i.title }}"<br />{{ i.author }}</a></li>
+            <br />
+          {% endfor %}
+        </ul>
+        <!--Show a panel with pagination page numbers.-->
+        {% if page_obj.has_other_pages %}
+          <nav>
+            <ul>
+              {% if page_obj.has_previous %}
+                <l><a href="?page={{ page_obj.previous_page_number }}">&lt;</a></l>
+              {% endif %}
+              {% for i in paginator.page_range %}
+                {% if page_obj.number == i %}
+                  <l>{{ i }}</l>
+                {% elif i >= page_obj.number|add:-1 and i <= page_obj.number|add:1 %}
+                  <l><a href="?page={{ i }}">{{ i }}</a></l>
+                {% endif %}
+              {% endfor %}
+              {% if page_obj.has_next %}
+                <l><a href="?page={{ page_obj.next_page_number }}">&gt;</a></l>
+              {% endif %}
+            </ul>
+          </nav>
         {% endif %}
-        {% for i in paginator.page_range %}
-          {% if page_obj.number == i %}
-            <l>{{ i }}</l>
-          {% elif i >= page_obj.number|add:-1 and i <= page_obj.number|add:1 %}
-            <l><a href="?page={{ i }}">{{ i }}</a></l>
-          {% endif %}
-        {% endfor %}
-        {% if page_obj.has_next %}
-          <l><a href="?page={{ page_obj.next_page_number }}">&gt;</a></l>
-        {% endif %}
-      </ul>
-    </nav>
-  {% endif %}
+      {% endif %}
+    </td>
+  </tr></table>
 {% endblock %}
