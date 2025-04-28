@@ -8,7 +8,8 @@
     Автор: {{ object.author }}<br />
     Год издания: {{ object.year }}<br />
     Издатель: {{ object.publisher }}<br />
-    Номер издания: {{ object.edition }}
+    Номер издания: {{ object.edition }}<br />
+    В наличии: {% if not object.distribution %} да {% else %} нет {% endif %}
   </td>
   <td>
     {% if object.cover %}

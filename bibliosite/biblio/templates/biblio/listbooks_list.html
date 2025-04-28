@@ -4,20 +4,22 @@
 
 {% block content %}
   <table><!--A table for marking up the entire page.--><tr>
-    <td style="vertical-align: top; padding-right: 1rem; text-align: right;"><!--Book search form.-->
+    <td class="panel-left"><!--Book search form.-->
       <form action="">
         {{ form.as_p }}
         <button type="submit">Найти</button>
       </form>
     </td>
     <td><!--Displays a list of books.-->
-      <h2>Книги в наличии</h2>
+      <h2>Список книг:</h2>
       {% if find_title %}<!--Displays a list of books found by the specified title/title and author.-->
         <ul>
           {% for i in object_list %}
             {% if find_title.lower in i.title.lower %}
               {% if find_author.lower in i.author.lower %}
-                <li><a href="{% url 'detail' i.id %}">"{{ i.title }}"<br />{{ i.author }}</a></li>
+                <li><a href="{% url 'detail' i.id %}">"{{ i.title }}"<br />{{ i.author }}</a>
+                  {% if i.distribution %} (нет в наличии) {% endif %}
+                </li>
                 <br />
               {% endif %}
             {% endif %}
@@ -26,7 +28,9 @@
       {% else %}<!--Displays a list of all books.-->
         <ul>
           {% for i in object_list %}
-            <li><a href="{% url 'detail' i.id %}">"{{ i.title }}"<br />{{ i.author }}</a></li>
+            <li><a href="{% url 'detail' i.id %}">"{{ i.title }}"<br />{{ i.author }}</a>
+              {% if i.distribution %} (нет в наличии) {% endif %}
+            </li>
             <br />
           {% endfor %}
         </ul>
