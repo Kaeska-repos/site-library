@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db import models
 from datetime import date
 
-from .models import ListBooks, Readers, Distribution
+from .models import ListBooks, Distribution
 from bibliosite.widgets import Calendar
 
 # Register your models here.
@@ -17,10 +17,4 @@ class ListBooksAdmin(admin.ModelAdmin):
 class DistributionAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.DateField: {'widget': Calendar(attrs={'value': date.today()})}
-    }
-
-@admin.register(Readers)
-class ReadersAdmin(admin.ModelAdmin):
-    formfield_overrides = {
-        models.DateField: {'widget': Calendar(attrs={'value': date(year=2000, month=1, day=1)})}
     }
