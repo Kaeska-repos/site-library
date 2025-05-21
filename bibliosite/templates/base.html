@@ -14,7 +14,12 @@
     <td>
       <b><a href="{% url 'home' %}">Главная</a></b>
       {% if user.groups.all.0.name == 'Рекрутер' %}
-       | <b><a href="{% url 'users:register' %}">Регистрация сотрудников</a></b>
+        | <b><a href="{% url 'users:register' %}">Регистрация сотрудников</a></b>
+      {% elif user.groups.all.0.name == 'Регистратор' %}
+        | <b><a href="{% url 'users:reg_reader' %}">Регистрация читателей</a></b>
+      {% elif user.groups.all.0.name == 'Библиотекарь' %}
+        | <b><a href="{% url 'reg_book' %}">Регистрация книг</a></b>
+        | <b><a href="{% url 'reg_distribution' %}">Выдача книг</a></b>
       {% endif %}
     </td>
     <td>{% block authorization %}

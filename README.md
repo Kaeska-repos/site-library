@@ -6,12 +6,14 @@ At the moment, the main page of the site displays only a list of registered book
 Books that are currently in the readers possession are marked "out of stock".
 The page contains a search form by title and author.
 Clicking on the link opens a page with a more detailed description of the book.
-Books and the date when the book was given to the reader, they are all registered using the admin panel.
-Superuser login: "super", password: "12345".
 
 The website has added functionality for user registration, authorization (login and password) and 
 password recovery by email (configured for the console backend).
 
 Three user groups have been created: the recruter for registration of library staff (рекрутер), the registrar 
 for registration of readers (регистратор), and the librarian for registration of books (библиотекарь).
-At the moment, only the recruter has access to the link for user registration.
+After authorization, recruiters can register new employees on the site.
+Registrars can register new readers on the site after authorization.
+Librarians can register: new books on the site and the date of issue of books to people.
+
+Superuser (only he has access to the admin-panel) login: "super", password: "12345".

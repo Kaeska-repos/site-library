@@ -27,7 +27,7 @@ class Distribution(models.Model):
     '''A model for managing the distribution of books to readers.'''
     rental_date = models.DateField(verbose_name='Дата выдачи')
     book = models.OneToOneField(ListBooks, models.CASCADE, verbose_name='Название книги / авторы')
-    person = models.OneToOneField(User, models.CASCADE, verbose_name='Фамилия Имя гг-мм-дд рождения')
+    person = models.ForeignKey(User, models.CASCADE, verbose_name='Фамилия Имя гг-мм-дд рождения')
 
     class Meta:
         verbose_name = "Выдано книг"

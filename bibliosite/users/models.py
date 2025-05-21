@@ -6,7 +6,7 @@ from django.core.validators import RegexValidator
 class Readers(models.Model):
     '''A model for registering readers.'''
     date_birth = models.DateField(verbose_name='Дата рождения')
-    phone = models.IntegerField(primary_key=True, validators=[RegexValidator(regex=r'^\d{10}$')], verbose_name='Телефон')
+    phone = models.IntegerField(validators=[RegexValidator(regex=r'^\d{10}$')], verbose_name='Телефон', unique=True)
     user = models.OneToOneField(User, models.CASCADE, verbose_name='Пользователь')
 
     class Meta:
@@ -14,4 +14,4 @@ class Readers(models.Model):
         verbose_name_plural = "Читатели"
 
     def __str__(self):
-        return f'{self.surname} {self.name} {self.date_birth}'
+        return f'{self.user} {self.phone} {self.date_birth}'

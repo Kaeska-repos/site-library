@@ -18,7 +18,7 @@
             {% if find_title.lower in i.title.lower %}
               {% if find_author.lower in i.author.lower %}
                 <li><a href="{% url 'detail' i.id %}">"{{ i.title }}"<br />{{ i.author }}</a>
-                  {% if i.distribution %} (нет в наличии) {% endif %}
+                {% if i.distribution %} (нет в наличии) {% endif %}
                 </li>
                 <br />
               {% endif %}
