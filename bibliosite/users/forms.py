@@ -5,61 +5,80 @@ from django.core.validators import RegexValidator
 from datetime import date
 
 
-class RegisterUserForm(forms.ModelForm):
+class UserChoice(forms.ModelChoiceField):
+    '''Display the users first and last name in the drop-down list.'''
+    def label_from_instance(self, obj):
+        return f'{obj.last_name} {obj.first_name}'
+
+
+# Forms.
+class RegisterForm(forms.ModelForm):
+    '''The basic user registration form.'''
+    def clean_password2(self):
+        cd = self.cleaned_data
+        if cd['password'] != cd['password2']:
+            raise forms.ValidationError('Пароли не совпадают!')
+        return cd['password2']
+    
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if email and User.objects.filter(email=email).exists():
+            raise forms.ValidationError('Такой email уже существует.')
+        return email
+
+
+class RegisterUserForm(RegisterForm):
     '''Employee registration form.'''
-    groups = forms.ModelChoiceField(queryset=Group.objects.all())
+    groups = forms.ModelChoiceField(queryset=Group.objects.all(), label='Должность')
     password2 = forms.CharField(widget=forms.PasswordInput(), label='Повтор пароля')
  
     class Meta:
         model = get_user_model()
-        fields = ['username', 'email', 'first_name', 'last_name', 'password', 'password2', 'groups']
+        fields = ['last_name', 'first_name', 'username', 'groups', 'email', 'password', 'password2']
         labels = {
             'username': 'Логин',
-            'password': 'Пароль',
             'email': 'E-mail',
-            'first_name': 'Имя',
-            'last_name': 'Фамилия',
         }
         widgets = {
-            'username': forms.TextInput(),
             'password': forms.PasswordInput(),
-            'email': forms.TextInput(),
-            'first_name': forms.TextInput(),
-            'last_name': forms.TextInput(),
         }
-        
-
-    def clean_password2(self):
-        cd = self.cleaned_data
-        if cd['password'] != cd['password2']:
-            raise forms.ValidationError('Пароли не совпадают!')
-        return cd['password2']
-    
-    def clean_email(self):
-        email = self.cleaned_data['email']
-        if email and User.objects.filter(email=email).exists():
-            raise forms.ValidationError('Такой email уже существует.')
-        return email
     
 
-class RegisterReaderForm(forms.ModelForm):
+class RegisterReaderForm(RegisterForm):
     '''A form for registering readers.'''
+    current_year = date.today().year
+
     password2 = forms.CharField(widget=forms.PasswordInput(), label='Повтор пароля')
     phone = forms.IntegerField(validators=[RegexValidator(regex=r'^\d{10}$')], label='Телефон')
-    date_birth = forms.DateField(label='Дата рождения', widget=forms.SelectDateWidget(years=range(date.today().year - 120, date.today().year - 13)), initial=date(year=(date.today().year - 14), month=1, day=1))
+    date_birth = forms.DateField(
+        label='Дата рождения', 
+        widget=forms.SelectDateWidget(years=range(current_year - 120, current_year - 13)), initial=date(year=(current_year - 14), month=1, day=1)
+    )
 
     class Meta:
         model = get_user_model()
         fields = ['username', 'email', 'first_name', 'last_name', 'password', 'password2', 'phone', 'date_birth']
-
-    def clean_password2(self):
-        cd = self.cleaned_data
-        if cd['password'] != cd['password2']:
-            raise forms.ValidationError('Пароли не совпадают!')
-        return cd['password2']
     
+
+class EditUserForm(forms.ModelForm):
+    '''Employee edit form.'''
+    class Meta:
+        model = get_user_model()
+        fields = ['last_name', 'first_name', 'email']
+        labels = {
+            'email': 'E-mail',
+        }
+
     def clean_email(self):
         email = self.cleaned_data['email']
-        if email and User.objects.filter(email=email).exists():
+        if email and User.objects.filter(email=email).exclude(id=self.instance.id).exists():
             raise forms.ValidationError('Такой email уже существует.')
         return email
+
+
+class SelectUserForm(forms.Form):
+    '''Find an employee.'''
+    list_employee = UserChoice(
+        queryset=User.objects.filter(is_superuser=0, groups__name__isnull=False).order_by('last_name'), 
+        label='Зарегистрированые'
+    )

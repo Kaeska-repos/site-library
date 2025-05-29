@@ -12,8 +12,8 @@ password recovery by email (configured for the console backend).
 
 Three user groups have been created: the recruter for registration of library staff (рекрутер), the registrar 
 for registration of readers (регистратор), and the librarian for registration of books (библиотекарь).
-After authorization, recruiters can register new employees on the site.
-Registrars can register new readers on the site after authorization.
+After authorization, recruiters can register new employees on the site, as well as edit and delete data about 
+already registered employees. Registrars can register new readers on the site after authorization.
 Librarians can register: new books on the site and the date of issue of books to people.
 
 Superuser (only he has access to the admin-panel) login: "super", password: "12345".

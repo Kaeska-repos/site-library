@@ -4,8 +4,8 @@
   <h1 class="title-center">Регистрация читателей</h1>
   <form method="post" class="form-center">
     {% csrf_token %}
-    <div>{{ form.non_field_errors }}</div>
-    {% for f in form %}
+    <div>{{ form_register.non_field_errors }}</div>
+    {% for f in form_register %}
       <label for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
       <div>{{ f.errors }}</div>
     {% endfor %}
