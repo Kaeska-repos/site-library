@@ -1,5 +1,4 @@
 from django import forms
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, User
 from django.core.validators import RegexValidator
 from datetime import date
@@ -31,9 +30,10 @@ class RegisterUserForm(RegisterForm):
     '''Employee registration form.'''
     groups = forms.ModelChoiceField(queryset=Group.objects.all(), label='Должность')
     password2 = forms.CharField(widget=forms.PasswordInput(), label='Повтор пароля')
+    btn_label = [('register', 'Зарегистрировать'),]
  
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ['last_name', 'first_name', 'username', 'groups', 'email', 'password', 'password2']
         labels = {
             'username': 'Логин',
@@ -47,6 +47,7 @@ class RegisterUserForm(RegisterForm):
 class RegisterReaderForm(RegisterForm):
     '''A form for registering readers.'''
     current_year = date.today().year
+    btn_label = [('register', 'Зарегистрировать'),]
 
     password2 = forms.CharField(widget=forms.PasswordInput(), label='Повтор пароля')
     phone = forms.IntegerField(validators=[RegexValidator(regex=r'^\d{10}$')], label='Телефон')
@@ -56,15 +57,44 @@ class RegisterReaderForm(RegisterForm):
     )
 
     class Meta:
-        model = get_user_model()
-        fields = ['username', 'email', 'first_name', 'last_name', 'password', 'password2', 'phone', 'date_birth']
+        model = User
+        fields = ['last_name', 'first_name', 'username', 'date_birth', 'phone', 'email', 'password', 'password2']
+        labels = {
+            'username': 'Логин',
+        }
+        widgets = {
+            'password': forms.PasswordInput(),
+        }
     
 
 class EditUserForm(forms.ModelForm):
     '''Employee edit form.'''
+    btn_disabled = False
+    btn_label = [('edit', 'Изменить'), ('delete', 'Удалить')]
+
     class Meta:
-        model = get_user_model()
+        model = User
         fields = ['last_name', 'first_name', 'email']
+        labels = {
+            'email': 'E-mail',
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data['email']
+        if email and User.objects.filter(email=email).exclude(id=self.instance.id).exists():
+            raise forms.ValidationError('Такой email уже существует.')
+        return email
+
+
+class EditReaderForm(forms.ModelForm):
+    '''Reader edit form.'''
+    phone = forms.IntegerField(validators=[RegexValidator(regex=r'^\d{10}$')], label='Телефон')
+    btn_disabled = False
+    btn_label = [('edit', 'Изменить'), ('delete', 'Удалить')]
+
+    class Meta:
+        model = User
+        fields = ['last_name', 'first_name', 'phone', 'email']
         labels = {
             'email': 'E-mail',
         }
@@ -82,3 +112,13 @@ class SelectUserForm(forms.Form):
         queryset=User.objects.filter(is_superuser=0, groups__name__isnull=False).order_by('last_name'), 
         label='Зарегистрированые'
     )
+    btn_label = [('select', 'Выбрать'),]
+
+
+class SelectReaderForm(forms.Form):
+    '''Find an reader.'''
+    list_readers = UserChoice(
+        queryset=User.objects.filter(is_superuser=0, groups__name__isnull=True).order_by('last_name'), 
+        label='Зарегистрированые'
+    )
+    btn_label = [('select', 'Выбрать'),]

@@ -3,3 +3,12 @@
   background-color:aliceblue;
   padding: 0.5rem;
 }
+
+.table-three-forms{
+  width: 100%;
+  background-color:lightsteelblue
+}
+
+.td-left {
+  width: 50%;
+}

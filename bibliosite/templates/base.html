@@ -1,45 +1,50 @@
+<!-- The "not_base_template" and "not_title_authorization" variables are passed to this templates in order to avoid including headers when expanding other templates:
+ "not_title_authorization" - deletes only the authorization block;
+ "not_base_template" - don't show the entire title. -->
+
 {% load static %}
 
-<!DOCTYPE html>
-
-<head>
-	<meta charset="UTF-8">
-	<link href="{% static 'biblio/styles.css' %}" rel="stylesheet" />
-  <link href="{% static 'users/styles.css' %}" rel="stylesheet" />
-	<link rel="icon" href="{% static 'biblio\favicon.ico' %}" />
-</head>
-
-<body>
-	<header><table class="table-header"><tr>
-    <td>
-      <b><a href="{% url 'home' %}">Главная</a></b>
-      {% if user.groups.all.0.name == 'Рекрутер' %}
-        | <b><a href="{% url 'users:register' %}">Регистрация сотрудников</a></b>
-      {% elif user.groups.all.0.name == 'Регистратор' %}
-        | <b><a href="{% url 'users:reg_reader' %}">Регистрация читателей</a></b>
-      {% elif user.groups.all.0.name == 'Библиотекарь' %}
-        | <b><a href="{% url 'reg_book' %}">Регистрация книг</a></b>
-        | <b><a href="{% url 'reg_distribution' %}">Выдача книг</a></b>
-      {% endif %}
-    </td>
-    <td>{% block authorization %}
-      {% if user and user.is_active %}
-        <form method="post" action="{% url 'users:logout' %}" style="text-align: right;">
-          {% csrf_token %}
-          <div>
-            <b>Здравствуйте, {{ user.username }}</b> | <button type="submit">Выйти</button>
-          </div>
-        </form>
-      {% else %}
-        <form action="{% url 'users:login' %}" style="text-align: right;">
-          <div><button type="submit">Авторизация</button></div>
-        </form>
-      {% endif %}
-    {% endblock %}</td>
-  </tr></table></header>
-	<main>
-		{% block content %}{% endblock %}
-  </main>
-</body>
-
-</html>
+{% if not not_base_template %}
+  <!DOCTYPE html>
+    <head>
+      <meta charset="UTF-8">
+      <link href="{% static 'biblio/styles.css' %}" rel="stylesheet" />
+      <link href="{% static 'users/styles.css' %}" rel="stylesheet" />
+      <link rel="icon" href="{% static 'biblio/favicon.ico' %}" />
+    </head>
+    <body>
+      <header><table class="table-header"><tr>
+        <td>
+          {% with user_group=user.groups.get.name %}
+            <b><a href="{% url 'home' %}">Главная</a></b>
+            {% if user_group == 'Рекрутер' %}
+              | <b><a href="{% url 'users:register' %}">Регистрация сотрудников</a></b>
+            {% elif user_group == 'Регистратор' %}
+              | <b><a href="{% url 'users:reg_reader' %}">Регистрация читателей</a></b>
+            {% elif user_group == 'Библиотекарь' %}
+              | <b><a href="{% url 'reg_book' %}">Регистрация книг</a></b>
+              | <b><a href="{% url 'reg_distribution' %}">Выдача книг</a></b>
+            {% endif %}
+          {% endwith %}
+        </td>
+        <td>{% if not not_title_authorization %}
+          {% if user and user.is_active %}
+            <form method="post" action="{% url 'users:logout' %}" style="text-align: right;">
+              {% csrf_token %}
+              <div><b>Здравствуйте, {{ user.username }}</b> | <button type="submit">Выйти</button></div>
+            </form>
+          {% else %}
+            <form action="{% url 'users:login' %}" style="text-align: right;">
+              <div><button type="submit">Авторизация</button></div>
+            </form>
+          {% endif %}
+        {% endif %}</td>
+      </tr></table></header>
+      <main>
+{% endif %}
+        {% block content %}{% endblock %}
+{% if not not_base_template %}
+      </main>
+    </body>
+  </html>
+{% endif %}

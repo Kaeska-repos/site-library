@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<table class="table-three-forms">
+  <tr>
+    <td class="td-left"><h1>{{ title_left }}</h1><hr /></td>
+    <td><h1>{{ title_right }}</h1><hr /></td>
+  </tr>
+  <tr>
+    <td>
+      {% include 'one_form.html' with form=form_register not_base_template=True %}
+    </td>
+    <td>
+      {% include 'one_form.html' with form=form_select not_base_template=True %}
+      <hr />
+      {% include 'one_form.html' with form=form_edit not_base_template=True %}
+    </td>
+  </tr>
+</table>
+<p>Последние действия:<b> {{ message }}</b></p>
+{% endblock %}

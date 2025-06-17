@@ -10,6 +10,12 @@
     Издатель: {{ object.publisher }}<br />
     Номер издания: {{ object.edition }}<br />
     В наличии: {% if not object.distribution %} да {% else %} нет {% endif %}
+    {% if user.groups.get.name == 'Библиотекарь' %}
+    <form method="post" action="">
+      {% csrf_token %}
+      <p><button type="submit">Удалить эту книгу</button></p>
+    </form>
+    {% endif %}
   </td>
   <td>
     {% if object.cover %}
