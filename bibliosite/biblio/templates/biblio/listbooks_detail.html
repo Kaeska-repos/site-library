@@ -2,25 +2,26 @@
 
 {% block content %}
 <!--Show full information about the book.-->
-<table><tr>
+{% load number_of_books_tag %}
+<table style="width: 100%;"><tr>
   <td>
     Заголовок: "{{ object.title }}"<br />
     Автор: {{ object.author }}<br />
     Год издания: {{ object.year }}<br />
     Издатель: {{ object.publisher }}<br />
     Номер издания: {{ object.edition }}<br />
-    В наличии: {% if not object.distribution %} да {% else %} нет {% endif %}
-    {% if user.groups.get.name == 'Библиотекарь' %}
-    <form method="post" action="">
-      {% csrf_token %}
-      <p><button type="submit">Удалить эту книгу</button></p>
-    </form>
-    {% endif %}
   </td>
-  <td>
+  <td style="width: 50%;">
     {% if object.cover %}
       <img src="{{object.cover.url}}" />
     {% endif %}
   </td>
-</tr></table>
+</tr>
+<tr><td>    {% if user.groups.get.name == 'Библиотекарь' %}
+  В наличии: {{ number_of_books }}
+      {% include 'one_form.html' with form=form_edit not_base_template=True center=True %}
+      {% else %}
+      <b>{% num object.numberofbooks.number object.distribution_set.all %}</b><br />
+    {% endif %}
+  </td><td></td></tr></table>
 {% endblock %}

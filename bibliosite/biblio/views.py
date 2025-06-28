@@ -21,17 +21,42 @@ class ListBooksPage(ListView):
         else:
             self.form = FindBook()
         context['form'] = self.form
-        context['find_title'] = self.request.GET.get('title', 0)
-        context['find_author'] = self.request.GET.get('author', 0)
+        context['title'] = self.request.GET.get('title', '')
+        context['author'] = self.request.GET.get('author', '')
         return context
+    
+    def get_queryset(self):
+        if self.request.GET.get('title', ''):
+            find_book = ListBooks.objects.filter(title__icontains=self.request.GET.get('title', ''), author__icontains=self.request.GET.get('author', ''))
+        else:
+            find_book = super().get_queryset()
+        return find_book
 
 
 class DetailBook(DetailView):
     '''Show full information about the book.'''
     model = ListBooks
 
+    def get_context_data(self, **kwargs):
+        count = Distribution.objects.filter(book_id=kwargs['object'].id).count()
+        count = kwargs['object'].numberofbooks.number - count
+        context = super().get_context_data(**kwargs)
+        context['number_of_books'] = count
+        context['form_edit'] = NumberOfBooksForm(initial={
+            'number': kwargs['object'].numberofbooks.number,
+            'additionally': kwargs['object'].numberofbooks.additionally
+            }
+        )
+        return context
+
     def post(self, request, *args, **kwargs):
-        ListBooks.objects.get(pk=kwargs['pk']).delete()
+        if request.POST['form_button'] == 'edit':
+            edit_book = NumberOfBooks.objects.get(book=kwargs['pk'])
+            edit_book.number = request.POST['number']
+            edit_book.additionally = request.POST['additionally']
+            edit_book.save()
+        else:
+            ListBooks.objects.get(pk=kwargs['pk']).delete()
         return http.HttpResponse("Книга удалена.")
 
 
@@ -49,29 +74,29 @@ class RegisterBooks(PermissionRequiredMixin, FormView):
     }
 
     def form_valid(self, form):
-        form.save()
+        book = form.save()
+        number_of_books = NumberOfBooks(number=self.request.POST['number'], additionally=self.request.POST['additionally'], book_id=book.id)
+        number_of_books.save()
         return super().form_valid(form)
-    
-
-user_id = None
 
 
 def register_distribution(request):
-    global user_id
     if request.method == "POST":
-        if request.POST['check'] == 'select':
+        if request.POST['form_button'] == 'select':
             # Action after selecting an already registered reader from the list.
             form_register = DistributionForm()
             form_select = DistributionSelect(request.POST)
             person_id = request.POST['field']
             form_delete = DistributionDelete(person_id=person_id)
-            user_id = person_id
-        elif request.POST['check'] == 'edit':
+            request.session['usi'] = person_id
+            message = ''
+        elif request.POST['form_button'] == 'delete':
             # Deleting distribution data.
             form_register = DistributionForm()
-            form_select = DistributionSelect(initial={'field': user_id})
+            form_select = DistributionSelect(initial={'field': request.session['usi']})
             Distribution.objects.get(id=request.POST['book']).delete()
-            form_delete = DistributionDelete(person_id=user_id)
+            form_delete = DistributionDelete(person_id=request.session['usi'])
+            message = 'Данные были удалены.'
         else:
             # Saving data about a new reader in the database.
             form_delete = DistributionDelete()
@@ -79,10 +104,27 @@ def register_distribution(request):
             form_register = DistributionForm(request.POST)
             if form_register.is_valid():
                 form_register.save()
-            user_id = None
+                message = 'Регистрация прошла успешно.'
+            else:
+                message = 'Некорректно введены данные!'
+            request.session['usi'] = None
     else:
         form_register = DistributionForm()
         form_delete = DistributionDelete()
         form_select = DistributionSelect()
-        user_id = None
-    return render(request, 'three_forms.html', {'form_register': form_register, 'form_edit': form_delete, 'form_select': form_select, 'title_left': 'Выдача книг', 'title_right': 'Удаление данных о выдаче', 'user_id': user_id})
+        message = ''
+        request.session['usi'] = None
+    if request.session['usi'] is None:
+        DistributionDelete.btn_disabled = True
+    else:
+        DistributionDelete.btn_disabled = False
+    return render(request, 'three_forms.html', 
+                  {
+                      'form_register': form_register, 
+                      'form_edit': form_delete, 
+                      'form_select': form_select, 
+                      'title_left': 'Выдача книг', 
+                      'title_right': 'Удаление данных о выдаче', 
+                      'message': message,
+                  }
+    )

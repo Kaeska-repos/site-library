@@ -3,6 +3,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+  {% load number_of_books_tag %}
   <table><!--A table for marking up the entire page.--><tr>
     <td class="panel-left"><!--Book search form.-->
       <form action="">
@@ -12,24 +13,11 @@
     </td>
     <td><!--Displays a list of books.-->
       <h2>Список книг:</h2>
-      {% if find_title %}<!--Displays a list of books found by the specified title/title and author.-->
-        <ul>
-          {% for i in object_list %}
-            {% if find_title.lower in i.title.lower %}
-              {% if find_author.lower in i.author.lower %}
-                <li><a href="{% url 'detail' i.id %}">"{{ i.title }}"<br />{{ i.author }}</a>
-                {% if i.distribution %} (нет в наличии) {% endif %}
-                </li>
-                <br />
-              {% endif %}
-            {% endif %}
-          {% endfor %}
-        </ul>
-      {% else %}<!--Displays a list of all books.-->
+      <!--Displays a list of all books.-->
         <ul>
           {% for i in object_list %}
             <li><a href="{% url 'detail' i.id %}">"{{ i.title }}"<br />{{ i.author }}</a>
-              {% if i.distribution %} (нет в наличии) {% endif %}
+              {% num i.numberofbooks.number i.distribution_set.all %}
             </li>
             <br />
           {% endfor %}
@@ -39,22 +27,21 @@
           <nav>
             <ul>
               {% if page_obj.has_previous %}
-                <l><a href="?page={{ page_obj.previous_page_number }}">&lt;</a></l>
+                <l><a href="?page={{ page_obj.previous_page_number }}&title={{ title }}&author={{ author }}">&lt;</a></l>
               {% endif %}
               {% for i in paginator.page_range %}
                 {% if page_obj.number == i %}
                   <l>{{ i }}</l>
                 {% elif i >= page_obj.number|add:-1 and i <= page_obj.number|add:1 %}
-                  <l><a href="?page={{ i }}">{{ i }}</a></l>
+                  <l><a href="?page={{ i }}&title={{ title }}&author={{ author }}">{{ i }}</a></l>
                 {% endif %}
               {% endfor %}
               {% if page_obj.has_next %}
-                <l><a href="?page={{ page_obj.next_page_number }}">&gt;</a></l>
+                <l><a href="?page={{ page_obj.next_page_number }}&title={{ title }}&author={{ author }}">&gt;</a></l>
               {% endif %}
             </ul>
           </nav>
         {% endif %}
-      {% endif %}
     </td>
   </tr></table>
 {% endblock %}

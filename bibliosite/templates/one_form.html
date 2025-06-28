@@ -11,11 +11,11 @@
 
 {% block content %}
   <h1>{{ title }}</h1>
-  <form method="post" class="form-center">
+  <form method="post" {% if not center %} class="form-center" {% endif %}>
     {% csrf_token %}
     <div>{{ form.non_field_errors }}</div>
     {% for f in form %}
-      <p><label for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
+      <p><label for="{{ f.id_for_label }}">{{f.label}}: </label><br />{{ f }}</p>
       <div>{{ f.errors }}</div>
     {% endfor %}
     <p>{% for btn in form.btn_label %}

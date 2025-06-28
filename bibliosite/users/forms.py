@@ -108,7 +108,7 @@ class EditReaderForm(forms.ModelForm):
 
 class SelectUserForm(forms.Form):
     '''Find an employee.'''
-    list_employee = UserChoice(
+    list_person = UserChoice(
         queryset=User.objects.filter(is_superuser=0, groups__name__isnull=False).order_by('last_name'), 
         label='Зарегистрированые'
     )
@@ -117,7 +117,7 @@ class SelectUserForm(forms.Form):
 
 class SelectReaderForm(forms.Form):
     '''Find an reader.'''
-    list_readers = UserChoice(
+    list_person = UserChoice(
         queryset=User.objects.filter(is_superuser=0, groups__name__isnull=True).order_by('last_name'), 
         label='Зарегистрированые'
     )

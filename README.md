@@ -14,6 +14,6 @@ Three user groups have been created: the recruter for registration of library st
 for registration of readers (регистратор), and the librarian for registration of books (библиотекарь).
 After authorization, recruiters can register new employees on the site, as well as edit and delete data about 
 already registered employees. Registrars can register new readers on the site after authorization.
-Librarians can register: new books on the site and the date of issue of books to people.
+Librarians can register: new books on the site and the date of issue of books to people (to edit data about a book, you need to open a link to it after logging in).
 
 Superuser (only he has access to the admin-panel) login: "super", password: "12345".

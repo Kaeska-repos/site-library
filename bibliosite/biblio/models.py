@@ -11,7 +11,6 @@ class ListBooks(models.Model):
     year = models.IntegerField(validators=[MaxValueValidator(datetime.date.today().year)], verbose_name='Год издания')
     publisher = models.CharField(max_length=50, verbose_name='Издательство')
     edition = models.PositiveIntegerField(default=1, verbose_name='Номер издания')
-    additionally = models.TextField(max_length=1000, blank=True, verbose_name='Дополнительно')
     cover = models.ImageField(upload_to="covers/%Y/", blank=True, verbose_name='Обложка')
 
     class Meta:
@@ -21,12 +20,18 @@ class ListBooks(models.Model):
 
     def __str__(self):
         return f'{self.title} / {self.author}'
+    
+
+class NumberOfBooks(models.Model):
+    number = models.PositiveIntegerField(verbose_name='Количество')
+    additionally = models.TextField(max_length=1000, blank=True, verbose_name='Дополнительно')
+    book = models.OneToOneField(ListBooks, models.CASCADE, verbose_name='Название книги / авторы')
 
 
 class Distribution(models.Model):
     '''A model for managing the distribution of books to readers.'''
     rental_date = models.DateField(verbose_name='Дата выдачи')
-    book = models.OneToOneField(ListBooks, models.CASCADE, verbose_name='Название книги / авторы')
+    book = models.ForeignKey(ListBooks, models.CASCADE, verbose_name='Название книги / авторы')
     person = models.ForeignKey(User, models.CASCADE, verbose_name='Фамилия Имя гг-мм-дд рождения')
 
     class Meta:

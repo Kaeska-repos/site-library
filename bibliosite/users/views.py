@@ -28,147 +28,105 @@ class LoginUser(LoginView):
         return reverse_lazy('home')
 
 
-user_id = None
-
-
-@permission_required(perm='auth.add_user', raise_exception=True)
-def register(request):
-    '''Employee registration. As well as changing data about already registered employees.'''
-    global user_id
+def register_all(request, f_edit, f_register, f_select, t_left, t_right, add_phone=False):
+    '''Registration of people. As well as changing data about already registered people.'''
     if request.method == "POST":
+        # Saving data about a new person in the database.
         if request.POST['form_button'] == 'register':
-            # Saving data about a new employee in the database.
-            user_id = None
-            form_select = SelectUserForm()
-            form_edit = EditUserForm()
-            form_register = RegisterUserForm(request.POST)
+            request.session['usi'] = None
+            form_select = f_select()
+            form_edit = f_edit()
+            form_register = f_register(request.POST)
             if form_register.is_valid():
                 user = form_register.save(commit=False)
                 user.set_password(form_register.cleaned_data['password'])
                 user.save()
-                user.groups.add(request.POST['groups'])
+                if add_phone:
+                    birth = date(year=int(request.POST['date_birth_year']), month=int(request.POST['date_birth_month']), day=int(request.POST['date_birth_day']))
+                    add_info_user = Readers(phone=request.POST['phone'], date_birth=birth, user_id=user.id)
+                    add_info_user.save()
+                else:
+                    user.groups.add(request.POST['groups'])
                 message = 'Регистрация прошла успешно.'
             else:
                 message = 'Некорректно введены данные!'
         elif request.POST['form_button'] == 'select':
-            # Action after selecting an already registered employee from the list.
-            form_register = RegisterUserForm()
-            form_select = SelectUserForm()
-            user_id = request.POST['list_employee']
-            employee_list = list(User.objects.filter(id=user_id).values('last_name', 'first_name', 'email'))
+            # Action after selecting an already registered person from the list.
+            form_register = f_register()
+            form_select = f_select()
+            request.session['usi'] = request.POST['list_person']
+            employee_list = list(User.objects.filter(id=request.session['usi']).values('last_name', 'first_name', 'email'))
+            if add_phone:
+                employee_list[0]['phone'] = User.objects.get(id=request.session['usi']).readers.phone
             employee_query = QueryDict("", mutable=True)
             employee_query.update(employee_list[0])
-            form_edit = EditUserForm(employee_query, instance=User.objects.get(id=user_id))
+            form_edit = f_edit(employee_query, instance=User.objects.get(id=request.session['usi']))
             message = ''
         else:
-            # Saving the changed employee data in the database.
-            form_register = RegisterUserForm()
-            form_select = SelectUserForm()
+            # Saving the changed person data in the database.
+            form_register = f_register()
+            form_select = f_select()
             if request.POST['form_button'] == 'edit':
-                form_edit = EditUserForm(request.POST, instance=User.objects.get(id=user_id))
+                form_edit = f_edit(request.POST, instance=User.objects.get(id=request.session['usi']))
                 if form_edit.is_valid():
-                    form_edit.save()  # Saving changes to employee data.
+                    form_edit.save() # Saving changes to person data.
+                    if add_phone:
+                        user_phone = User.objects.get(id=request.session['usi']).readers
+                        user_phone.phone = request.POST['phone']
+                        user_phone.save()
                     message = 'Изменения успешно внесены в базу данных.'
                 else:
                     message = 'Некорректно введены данные!'
             elif request.POST['form_button'] == 'delete':
-                # Deleting employee data.
-                User.objects.get(id=user_id).delete()
-                user_id = None
+                # Deleting person data.
+                User.objects.get(id=request.session['usi']).delete()
+                request.session['usi'] = None
                 message = 'Данные о сотруднике были удалены.'
-                form_edit = EditUserForm()
+                form_edit = f_edit()
     else:
-        form_register = RegisterUserForm()
-        form_edit = EditUserForm()
-        form_select = SelectUserForm()
-        user_id = None
+        form_register = f_register()
+        form_edit = f_edit()
+        form_select = f_select()
+        request.session['usi'] = None
         message = ''
-    if user_id is None:
-        EditUserForm.btn_disabled = True
+    if request.session['usi'] is None:
+        f_edit.btn_disabled = True
     else:
-        EditUserForm.btn_disabled = False
+        f_edit.btn_disabled = False
     return render(request, 'three_forms.html',
                   {
                       'form_register': form_register, 
                       'form_edit': form_edit, 
                       'form_select': form_select, 
-                      'title_left': 'Регистрация сотрудников', 
-                      'title_right': 'Информация о сотрудниках',
+                      'title_left': t_left, 
+                      'title_right': t_right,
                       'message': message,
                   }
+    )
+
+
+@permission_required(perm='auth.add_user', raise_exception=True)
+def register(request):
+    '''Employee registration. As well as changing data about already registered employees.'''
+    return register_all(
+        request, 
+        EditUserForm, 
+        RegisterUserForm, 
+        SelectUserForm, 
+        'Регистрация сотрудников', 
+        'Информация о сотрудниках'
     )
 
 
 @permission_required(perm='users.add_readers', raise_exception=True)
 def reg_reader(request):
     '''Register readers.'''
-    global user_id
-    if request.method == "POST":
-        if request.POST['form_button'] == 'register':
-            # Saving data about a new reader in the database.
-            user_id = None
-            form_edit = EditReaderForm()
-            form_select = SelectReaderForm()
-            form_register = RegisterReaderForm(request.POST)
-            if form_register.is_valid():
-                user = form_register.save(commit=False)
-                user.set_password(form_register.cleaned_data['password'])
-                user.save()
-                birth = date(year=int(request.POST['date_birth_year']), month=int(request.POST['date_birth_month']), day=int(request.POST['date_birth_day']))
-                add_info_user = Readers(phone=request.POST['phone'], date_birth=birth, user_id=user.id)
-                add_info_user.save()
-                message = 'Регистрация прошла успешно.'
-            else:
-                message = 'Некорректно введены данные!'
-        elif request.POST['form_button'] == 'select':
-            # Action after selecting an already registered reader from the list.
-            form_register = RegisterReaderForm()
-            form_select = SelectReaderForm()
-            user_id = request.POST['list_readers']
-            reader_list = list(User.objects.filter(id=user_id).values('last_name', 'first_name', 'email'))
-            reader_list[0]['phone'] = User.objects.get(id=user_id).readers.phone
-            reader_query = QueryDict("", mutable=True)
-            reader_query.update(reader_list[0])
-            form_edit = EditReaderForm(reader_query, instance=User.objects.get(id=user_id))
-            message = ''
-        else:
-            # Saving the changed reader data in the database.
-            form_register = RegisterReaderForm()
-            form_select = SelectReaderForm()
-            if request.POST['form_button'] == 'edit':
-                # Saving changes to reader data.
-                form_edit = EditReaderForm(request.POST, instance=User.objects.get(id=user_id))
-                if form_edit.is_valid():
-                    form_edit.save()
-                    user_phone = User.objects.get(id=user_id).readers
-                    user_phone.phone = request.POST['phone']
-                    user_phone.save()
-                    message = 'Изменения успешно внесены в базу данных.'
-                else:
-                    message = 'Некорректно введены данные!'
-            elif request.POST['form_button'] == 'delete':
-                # Deleting reader data.
-                User.objects.get(id=user_id).delete()
-                user_id = None
-                message = 'Данные о сотруднике были удалены.'
-                form_edit = EditReaderForm()
-    else:
-        form_register = RegisterReaderForm()
-        form_edit = EditReaderForm()
-        form_select = SelectReaderForm()
-        user_id = None
-        message = ''
-    if user_id is None:
-        EditUserForm.btn_disabled = True
-    else:
-        EditUserForm.btn_disabled = False
-    return render(request, 'three_forms.html',
-                  {
-                      'form_register': form_register, 
-                      'form_edit': form_edit, 
-                      'form_select': form_select, 
-                      'title_left': 'Регистрация читателей', 
-                      'title_right': 'Информация о читателях',
-                      'message': message,
-                  }
+    return register_all(
+        request, 
+        EditReaderForm, 
+        RegisterReaderForm, 
+        SelectReaderForm, 
+        'Регистрация читателей', 
+        'Информация о читателях', 
+        add_phone=True
     )
