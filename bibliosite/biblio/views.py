@@ -3,7 +3,7 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import FormView
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.urls import reverse_lazy
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from .models import ListBooks
 from .forms import *
@@ -47,17 +47,30 @@ class DetailBook(DetailView):
             'additionally': kwargs['object'].numberofbooks.additionally
             }
         )
+        if self.request.GET:
+            context['message'] = self.request.GET['edit_num']
         return context
+    
 
     def post(self, request, *args, **kwargs):
         if request.POST['form_button'] == 'edit':
-            edit_book = NumberOfBooks.objects.get(book=kwargs['pk'])
-            edit_book.number = request.POST['number']
-            edit_book.additionally = request.POST['additionally']
-            edit_book.save()
+            edit_book = NumberOfBooksForm(request.POST, instance=NumberOfBooks.objects.get(book=kwargs['pk']))
+            resp = reverse_lazy('detail', args=(kwargs['pk'],))
+            num = int(request.POST['number']) - len(ListBooks.objects.get(id=kwargs['pk']).distribution_set.all())
+            if num >= 0:
+                if edit_book.is_valid():
+                    edit_book.save()
+                    resp += '?edit_num=Сохранено.'
+            else:
+                resp += '?edit_num=Неверные данные.'
+            return redirect(resp)
         else:
             ListBooks.objects.get(pk=kwargs['pk']).delete()
-        return http.HttpResponse("Книга удалена.")
+            return http.HttpResponse(f"Книга удалена. Вернуться на <a href={reverse_lazy('home')}>главную страницу.</a>")
+    
+
+def about(request):
+    return render(request, 'biblio/about.html')
 
 
 class RegisterBooks(PermissionRequiredMixin, FormView):

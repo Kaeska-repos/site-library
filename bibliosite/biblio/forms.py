@@ -71,6 +71,7 @@ class DistributionDelete(forms.ModelForm):
 
 class NumberOfBooksForm(forms.ModelForm):
     btn_label = [('edit', 'Изменить'), ('delete', 'Удалить эту книгу')]
+    number = forms.IntegerField(label='Количество', validators=[MinValueValidator(1)])
 
     class Meta:
         model = NumberOfBooks

@@ -15,8 +15,9 @@
     <body>
       <header><table class="table-header"><tr>
         <td>
+          <b><a href="{% url 'home' %}">Главная</a></b> |
+          <b><a href="{% url 'about' %}">О сайте</a></b>
           {% with user_group=user.groups.get.name %}
-            <b><a href="{% url 'home' %}">Главная</a></b>
             {% if user_group == 'Рекрутер' %}
               | <b><a href="{% url 'users:register' %}">Регистрация сотрудников</a></b>
             {% elif user_group == 'Регистратор' %}

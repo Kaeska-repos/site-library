@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <div>{{ text }}</div>
+  <div>{% autoescape off %}{{ text }}{% endautoescape %}</div>
 {% endblock %}

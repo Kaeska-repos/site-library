@@ -20,6 +20,7 @@
 <tr><td>    {% if user.groups.get.name == 'Библиотекарь' %}
   В наличии: {{ number_of_books }}
       {% include 'one_form.html' with form=form_edit not_base_template=True center=True %}
+      <b>Последние действия:</b> {{ message }}
       {% else %}
       <b>{% num object.numberofbooks.number object.distribution_set.all %}</b><br />
     {% endif %}
